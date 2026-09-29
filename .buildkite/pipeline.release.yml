@@ -48,19 +48,9 @@ steps:
     key: release
     artifact_paths:
       - dist/**/*
-    env:
-      AWS_REGION: us-east-1
+    secrets:
+      - GITHUB_TOKEN
     plugins:
-      - aws-assume-role-with-web-identity#v1.7.0:
-          role-arn: arn:aws:iam::445615400570:role/pipeline-buildkite-monorail-plugin-monorepo-diff-release
-          session-tags:
-            - organization_slug
-            - organization_id
-            - pipeline_slug
-            - build_branch
-      - aws-ssm#v1.1.0:
-          parameters:
-            GITHUB_TOKEN: /pipelines/buildkite/monorail-plugin-monorepo-diff-release/github-token
       - docker#v5.14.0:
           image: "goreleaser/goreleaser:v2.17.1"
           always-pull: true
