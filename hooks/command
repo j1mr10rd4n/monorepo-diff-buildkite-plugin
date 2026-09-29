@@ -136,7 +136,7 @@ download_with_retry() {
 download_checksums() {
   local _version="$1"
   local _dest="$2"
-  local _repo="https://github.com/buildkite-plugins/monorepo-diff-buildkite-plugin"
+  local _repo="https://github.com/j1mr10rd4n/monorepo-diff-buildkite-plugin"
   local _url="${_repo}/releases/download/${_version}/checksums.txt"
 
   if ! downloader "$_url" "$_dest"; then
@@ -217,7 +217,7 @@ verify_checksum() {
 }
 
 get_latest_version() {
-  local _repo="https://api.github.com/repos/buildkite-plugins/monorepo-diff-buildkite-plugin"
+  local _repo="https://api.github.com/repos/j1mr10rd4n/monorepo-diff-buildkite-plugin"
   local _version=""
 
   if check_cmd curl; then
@@ -257,7 +257,7 @@ get_version() {
 download_binary_and_run() {
   get_architecture || return 1
   local _arch="$RETVAL"
-  local _repo="https://github.com/buildkite-plugins/monorepo-diff-buildkite-plugin"
+  local _repo="https://github.com/j1mr10rd4n/monorepo-diff-buildkite-plugin"
 
   get_version || return 1
   local _specified_version="$RETVAL"
