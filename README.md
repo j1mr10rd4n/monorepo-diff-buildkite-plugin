@@ -106,6 +106,7 @@ This is a sub-section that provides configuration for running commands or trigge
 The plugin validates all step configurations before uploading the pipeline. Invalid steps are automatically skipped with a warning logged to the build output.
 
 **A valid step must have:**
+
 - A `command` or `commands` field (for command steps), OR
 - A `trigger` field (for trigger steps), OR
 - A `group` field with either:
@@ -118,7 +119,7 @@ The plugin validates all step configurations before uploading the pipeline. Inva
 # ❌ Empty step - no action defined
 - path: "app/"
   config:
-    label: "Deploy app"  # Only has a label, no command/trigger
+    label: "Deploy app" # Only has a label, no command/trigger
 
 # ❌ Empty group - no action and no nested steps
 - path: "services/"
@@ -218,7 +219,7 @@ steps:
             - path: docker/
               config:
                 group: docker/**
-                steps:  # Required: groups must have either 'steps' or an action
+                steps: # Required: groups must have either 'steps' or an action
                   - plugins:
                       - docker#v5.13.0:
                           build: service
@@ -316,6 +317,8 @@ Default: `git diff --name-only HEAD~1`
 The diff command must produce **newline-delimited output** with one file path per line. This is the format that `git diff --name-only` produces by default. Newline-delimited output is required for filenames containing spaces to be parsed correctly.
 
 Custom diff scripts should follow the same convention — print one path per line to standard output.
+
+The diff command can print suplementary output to standard error. This output will be shown in the step's log output when the log level is set to debug.
 
 #### Sample output
 
@@ -415,7 +418,7 @@ steps:
                   message: "Deploying foo service"
                   env:
                     HELLO: 123
-                    AWS_REGION: ~  # Null literal reads from $AWS_REGION
+                    AWS_REGION: ~ # Null literal reads from $AWS_REGION
 ```
 
 ### Environment Variables
@@ -436,8 +439,8 @@ steps:
             API_URL: https://api.example.com
             PORT: 8080
             DEBUG: false
-            AWS_REGION: ~         # Null literal reads from $AWS_REGION
-            EMPTY_STRING: ""      # Empty string sets to literal ""
+            AWS_REGION: ~ # Null literal reads from $AWS_REGION
+            EMPTY_STRING: "" # Empty string sets to literal ""
           watch:
             - path: "services/"
               config:
@@ -448,6 +451,7 @@ steps:
 ```
 
 Map format features:
+
 - Clean YAML syntax using key-value pairs
 - Supports non-string values (numbers, booleans) which are converted to strings automatically
 - Null values read from OS environment: use `KEY: ~` (recommended YAML null literal)
@@ -469,7 +473,7 @@ steps:
           env:
             - NODE_ENV=production
             - API_URL=https://api.example.com
-            - AWS_REGION          # Key-only reads from $AWS_REGION
+            - AWS_REGION # Key-only reads from $AWS_REGION
           watch:
             - path: "services/"
               config:
@@ -479,6 +483,7 @@ steps:
 ```
 
 Array format features:
+
 - Key-only entries (e.g., `AWS_REGION`) read from OS environment variables
 - Supports values with equals signs: `BUILD_ARGS=--arg1=val1`
 - Whitespace trimmed from keys and values automatically
@@ -486,14 +491,14 @@ Array format features:
 
 #### Format Comparison
 
-| Feature | Map Format | Array Format |
-|---------|-----------|--------------|
-| Syntax | `KEY: value` | `KEY=value` |
+| Feature        | Map Format              | Array Format             |
+| -------------- | ----------------------- | ------------------------ |
+| Syntax         | `KEY: value`            | `KEY=value`              |
 | OS env reading | Null literal (`KEY: ~`) | Key-only entries (`KEY`) |
-| Empty string | `KEY: ""` sets to `""` | `KEY=` sets to `""` |
-| Type support | Numbers, booleans | Strings only |
-| Whitespace | Preserved in values | Trimmed |
-| Readability | High | Medium |
+| Empty string   | `KEY: ""` sets to `""`  | `KEY=` sets to `""`      |
+| Type support   | Numbers, booleans       | Strings only             |
+| Whitespace     | Preserved in values     | Trimmed                  |
+| Readability    | High                    | Medium                   |
 
 **Note:** The format is determined by YAML structure - you cannot mix array and map syntax at the same level. However, you can use different formats at different levels (e.g., map format at plugin level, array format at step level).
 
@@ -521,6 +526,7 @@ Default: `true`
 By setting `download` to `false`, the plugin will use a pre-installed binary instead of downloading it on each run. The binary `monorepo-diff-buildkite-plugin` must be available in your PATH (typically `/usr/bin`).
 
 This option is useful for:
+
 - Reducing build time by avoiding repeated downloads
 - Improving security by using pre-vetted binaries
 - Organizations with policies against runtime binary downloads
@@ -549,6 +555,7 @@ Default: `false`
 Enable SHA256 checksum verification for downloaded binaries to enhance security. When enabled, the plugin verifies checksums against those published in the GitHub release, providing protection against compromised artifacts, network attacks, and binary tampering.
 
 Checksum verification is performed for:
+
 - Newly downloaded binaries (fails and deletes binary on mismatch)
 - Cached binaries before reuse (automatically re-downloads on mismatch)
 - Pre-installed binaries when `download: false` (best-effort, non-blocking)
@@ -560,7 +567,7 @@ steps:
   - label: "Triggering pipelines"
     plugins:
       - monorepo-diff#v1.11.2:
-          verify_checksum: true  # Recommended for enhanced security
+          verify_checksum: true # Recommended for enhanced security
           diff: "git diff --name-only HEAD~1"
           watch:
             - path: "foo-service/"
@@ -775,7 +782,7 @@ steps:
           diff: "git diff --name-only $(head -n 1 last_successful_build)"
           interpolation: false
           env:
-            env1: env-1  # this will be appended to all env configuration
+            env1: env-1 # this will be appended to all env configuration
           hooks:
             - command: "echo $(git rev-parse HEAD) > last_successful_build"
           watch:
@@ -838,6 +845,7 @@ Default: `BUILDKITE_PLUGINS_PATH`
 This is the filesystem folder where the Go binary will be kept.
 
 ## Example
+
 ```yaml
 steps:
   - label: "Triggering pipelines"
@@ -889,8 +897,8 @@ If you see warnings like `Skipping invalid step: empty step configuration`, chec
 ## Compatibility
 
 | Elastic Stack | Agent Stack K8s | Hosted (Mac) | Hosted (Linux) | Notes |
-| :-----------: | :-------------: | :----: | :----: |:---- |
-| ✅ | ✅ | ✅ | ✅ | N/A |
+| :-----------: | :-------------: | :----------: | :------------: | :---- |
+|      ✅       |       ✅        |      ✅      |       ✅       | N/A   |
 
 - ✅ Fully supported (all combinations of attributes have been tested to pass)
 

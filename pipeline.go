@@ -135,7 +135,7 @@ func uploadPipeline(plugin Plugin, generatePipeline PipelineGenerator) (string, 
 		args = append(args, "--no-interpolation")
 	}
 
-	_, err = executeCommand("buildkite-agent", args)
+	_, _, err = executeCommand("buildkite-agent", args)
 
 	return cmd, args, err
 }
@@ -143,10 +143,16 @@ func uploadPipeline(plugin Plugin, generatePipeline PipelineGenerator) (string, 
 func diff(command string) ([]string, error) {
 	log.Infof("Running diff command: %s", command)
 
-	output, err := executeCommand(
+	output, stderrOutput, err := executeCommand(
 		env("SHELL", "bash"),
 		[]string{"-c", strings.ReplaceAll(command, "\n", " ")},
 	)
+
+	stderrOutput = strings.TrimRight(stderrOutput, "\n")
+	if stderrOutput != "" {
+		log.Debug("Stderr output from diff: \n" + stderrOutput)
+	}
+
 	if err != nil {
 		return nil, fmt.Errorf("diff command failed: %v", err)
 	}
