@@ -10,6 +10,8 @@ import (
 	"testing"
 
 	"github.com/buildkite/bintest/v3"
+	log "github.com/sirupsen/logrus"
+	logtest "github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -106,6 +108,18 @@ func TestUploadPipelineCancelsIfThereIsNoDiffOutput(t *testing.T) {
 	assert.Equal(t, nil, err)
 }
 
+func TestUploadPipelineLogOutputIfThereIsNoDiffOutput(t *testing.T) {
+	plugin := Plugin{Diff: "echo"}
+	loghook := logtest.NewGlobal()
+	uploadPipeline(plugin, mockGeneratePipeline)
+
+	assert.Equal(t, 2, len(loghook.Entries))
+	assert.Equal(t, log.InfoLevel, loghook.Entries[0].Level)
+	assert.Equal(t, "Running diff command: echo", loghook.Entries[0].Message)
+	assert.Equal(t, log.InfoLevel, loghook.Entries[1].Level)
+	assert.Equal(t, "No changes detected. Skipping pipeline upload.", loghook.Entries[1].Message)
+}
+
 func TestUploadPipelineWithEmptyGeneratedPipeline(t *testing.T) {
 	plugin := Plugin{Diff: "echo ./bar-service"}
 	cmd, args, err := uploadPipeline(plugin, generatePipeline)
@@ -113,6 +127,22 @@ func TestUploadPipelineWithEmptyGeneratedPipeline(t *testing.T) {
 	assert.Equal(t, "", cmd)
 	assert.Equal(t, []string{}, args)
 	assert.Equal(t, nil, err)
+}
+
+func TestUploadPipelineLogOutputWithEmptyGeneratedPipeline(t *testing.T) {
+	plugin := Plugin{Diff: "echo ./bar-service"}
+	log.SetLevel(log.DebugLevel)
+	t.Cleanup(func() { log.SetLevel(log.InfoLevel) })
+	loghook := logtest.NewGlobal()
+	uploadPipeline(plugin, generatePipeline)
+
+	assert.Equal(t, 3, len(loghook.Entries))
+	assert.Equal(t, log.InfoLevel, loghook.Entries[0].Level)
+	assert.Equal(t, "Running diff command: echo ./bar-service", loghook.Entries[0].Message)
+	assert.Equal(t, log.DebugLevel, loghook.Entries[1].Level)
+	assert.Equal(t, "Output from diff: \n./bar-service", loghook.Entries[1].Message)
+	assert.Equal(t, log.InfoLevel, loghook.Entries[2].Level)
+	assert.Equal(t, "No steps generated. Skipping pipeline upload.", loghook.Entries[2].Message)
 }
 
 // TestUploadPipelineUploadsSkipOnlyPipeline locks in an intentional behaviour
