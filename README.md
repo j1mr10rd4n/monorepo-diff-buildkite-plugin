@@ -317,6 +317,8 @@ The diff command must produce **newline-delimited output** with one file path pe
 
 Custom diff scripts should follow the same convention — print one path per line to standard output.
 
+The diff command can print suplementary output to standard error. This output will be shown in the step's log output when the log level is set to debug.
+
 #### Sample output
 
 ```

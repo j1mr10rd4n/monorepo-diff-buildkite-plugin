@@ -9,7 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func executeCommand(command string, args []string) (string, error) {
+func executeCommand(command string, args []string) (string, string, error) {
 	cmd := exec.Command(command, args...)
 
 	var out bytes.Buffer
@@ -24,10 +24,10 @@ func executeCommand(command string, args []string) (string, error) {
 			command, args, stderr.String(),
 		)
 
-		return "", fmt.Errorf("command `%s` failed: %v", command, err)
+		return "", "", fmt.Errorf("command `%s` failed: %v", command, err)
 	}
 
-	return out.String(), nil
+	return out.String(), stderr.String(), nil
 }
 
 func env(key, fallback string) string {

@@ -145,6 +145,24 @@ func TestUploadPipelineLogOutputWithEmptyGeneratedPipeline(t *testing.T) {
 	assert.Equal(t, "No steps generated. Skipping pipeline upload.", loghook.Entries[2].Message)
 }
 
+func TestUploadPipelineStdErrLogOutputWithEmptyGeneratedPipeline(t *testing.T) {
+	plugin := Plugin{Diff: ">&2 echo 'Some output info'; echo ./bar-service"}
+	log.SetLevel(log.DebugLevel)
+	t.Cleanup(func() { log.SetLevel(log.InfoLevel) })
+	loghook := logtest.NewGlobal()
+	uploadPipeline(plugin, generatePipeline)
+
+	assert.Equal(t, 4, len(loghook.Entries))
+	assert.Equal(t, log.InfoLevel, loghook.Entries[0].Level)
+	assert.Equal(t, "Running diff command: >&2 echo 'Some output info'; echo ./bar-service", loghook.Entries[0].Message)
+	assert.Equal(t, log.DebugLevel, loghook.Entries[1].Level)
+	assert.Equal(t, "Stderr output from diff: \nSome output info", loghook.Entries[1].Message)
+	assert.Equal(t, log.DebugLevel, loghook.Entries[2].Level)
+	assert.Equal(t, "Output from diff: \n./bar-service", loghook.Entries[2].Message)
+	assert.Equal(t, log.InfoLevel, loghook.Entries[3].Level)
+	assert.Equal(t, "No steps generated. Skipping pipeline upload.", loghook.Entries[3].Message)
+}
+
 // TestUploadPipelineUploadsSkipOnlyPipeline locks in an intentional behaviour
 // change: previously, if no watch matched and there was no default step,
 // nothing was uploaded. With skip_on_no_changes enabled, an unmatched watch
